@@ -12,7 +12,7 @@ class JourneyStorage {
   }
 
   def getHistory(cardNumber: Int) : List[Journey] = {
-    listOfJourney.map(_._2).toList.reverse
+    listOfJourney.filter(_._1 == cardNumber).map(_._2).toList.reverse
   }
 
   def getLastTube(cardNumber: Int) : Option[Journey] = {

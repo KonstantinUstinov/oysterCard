@@ -18,9 +18,17 @@ class Service(cardStorage: CardStorage, journeyStorage: JourneyStorage, calculat
 
   }
 
+  def validateJourney(current: Journey, previous: Journey, card: Card): Either[ValidationError, Unit] = {
+    validationService.validateBalance(card, current.transport).
+      flatMap(_ => validationService.verifyTripIsValid(current, previous))
+  }
+
   def doTubeJourney(journey: Journey, card: Card) : Either[ValidationError, (Card, Journey)] = {
     journeyStorage.getLastTube(card.number) match {
       case Some(previous) =>
+        validateJourney(journey, previous, card)
+          .right.map( _ => calculationService.updateTubeCost(journey, Some(previous)))
+          .right.map(j => paymentService.payment(j, card))
       case None =>
         validationService.validateBalance(card, journey.transport)
           .right.map( _ => calculationService.updateTubeCost(journey, None))
@@ -31,7 +39,7 @@ class Service(cardStorage: CardStorage, journeyStorage: JourneyStorage, calculat
   def doJourney(journey: Journey, card: Card) : Either[ValidationError, (Card, Journey)] = {
     journey.transport match {
       case Transport.Bus => doBusJourney(journey, card)
-      case Transport.Tube => Left(ValidationError(""))
+      case Transport.Tube => doTubeJourney(journey, card)
     }
   }
 
