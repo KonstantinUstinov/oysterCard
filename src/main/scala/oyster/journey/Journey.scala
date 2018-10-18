@@ -11,4 +11,4 @@ object Transport extends Enumeration {
   val Bus, Tube = Value
 }
 
-case class Journey(code: String, transport: Transport.Value, direction: Direction.Value, cost: Double)
+case class Journey(stationName: String, transport: Transport.Value, direction: Direction.Value, cost: Double)
